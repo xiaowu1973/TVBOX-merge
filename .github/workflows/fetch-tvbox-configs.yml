@@ -1,0 +1,31 @@
+name: fetch-tvbox-configs
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # UTC时间每天02:00（北京时间10:00）
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  fetch-and-save:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
+        run: |
+          pip install requests
+
+      - name: 执行 Python 脚本
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}         # 你的个人访问令牌（必须有 repo 权限！）
+          GH_USERNAME:${{ secrets.GH_USERNAME }}   # 你的 GitHub 用户名
+          REPO_NAME: ${{ secrets.REPO_NAME }}       # 目标仓库，如 hxy97/tvbox-config-collector
+          FILE_PATH:${{ secrets.FILE_PATH || 'source.txt' }}  # 保存的文件路径
+        run: |
+          python merge/fetch_tvbox_configs.py
